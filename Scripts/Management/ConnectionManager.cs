@@ -20,6 +20,11 @@ public class ConnectionManager : MonoBehaviourPunCallbacks
         InitialConnect();
     }
 
+    private void Start()
+    {
+        SoundManager.Instance.PlaySound2D("BGM",0,true,SoundType.BGM);
+    }
+
     public void InitialConnect()
     {
         if (!PhotonNetwork.IsConnected)

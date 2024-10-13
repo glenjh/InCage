@@ -23,20 +23,41 @@ public class Pistol : Weapon
             RaycastHit hitInfo;
             if (Physics.Raycast(ray, out hitInfo, range, layerMask))
             {
-                // && !hitInfo.collider.gameObject.GetComponent<PhotonView>().IsMine
-                if(hitInfo.collider.gameObject.CompareTag("Player"))
+                // 공격자만 임팩트 이펙트를 생성하게 수정
+                if (PhotonView.Get(this).IsMine) // IsMine을 사용하여 로컬 플레이어만 처리
+                {
+                    if (hitInfo.collider.gameObject.CompareTag("Player") &&
+                        !hitInfo.collider.gameObject.GetComponent<PhotonView>().IsMine)
+                    {
+                        if (hitInfo.collider.gameObject.GetComponent<Player>().curShield > 0)
+                        {
+                            PhotonNetwork.Instantiate("ShieldImpact", hitInfo.point,
+                                Quaternion.LookRotation(hitInfo.normal));
+                        }
+                        else
+                        {
+                            PhotonNetwork.Instantiate("HealthImpact", hitInfo.point,
+                                Quaternion.LookRotation(hitInfo.normal));
+                        }
+                    }
+                    else
+                    {
+                        PhotonNetwork.Instantiate("hitImpact", hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
+                    }
+                }
+
+                // 데미지는 모든 클라이언트에 동기화
+                if (hitInfo.collider.gameObject.CompareTag("Player") &&
+                    !hitInfo.collider.gameObject.GetComponent<PhotonView>().IsMine)
                 {
                     hitInfo.collider.gameObject.GetComponent<PhotonView>()
                         .RPC("TakeDamageRPC", RpcTarget.AllBuffered, damage);
                 }
-                Instantiate(hitEffect, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
-                // var damageable = hitInfo.transform.GetComponent<IDamageable>();
-                // if (damageable != null)
-                // {
-                //     damageable.TakeDamage(damage, pv);
-                // }
+                
+                SoundManager.Instance.PlaySound3D("Bullet Impact",hitInfo.transform,0,false,SoundType.EFFECT,false,0,10f);
             }
             ammoCur--;
+            SoundManager.Instance.PlaySound3D("Shot",muzzlePos);
             return true;
         }
         else

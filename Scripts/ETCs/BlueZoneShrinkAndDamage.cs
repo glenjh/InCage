@@ -61,6 +61,10 @@ public class BlueZoneShrinkAndDamage : MonoBehaviourPunCallbacks
     private int count = 0;
     private int countDownPrecall = 10;
     private CapsuleCollider col;
+
+    private delegate void TakeTickDamage(float damage);
+
+    private event TakeTickDamage takeTickDamageDelegate;
     
     #endregion
     
@@ -80,10 +84,7 @@ public class BlueZoneShrinkAndDamage : MonoBehaviourPunCallbacks
         col = GetComponent<CapsuleCollider>();
         
         // activate "ZoneDamage" in every tickRate seconds
-        if (PV.IsMine)
-        {
-            InvokeRepeating("ZoneDamage", 1f, tickRate);
-        }
+        InvokeRepeating("ZoneDamage", 1f, tickRate);
     }
 
     public override void OnDisable()
@@ -229,6 +230,8 @@ public class BlueZoneShrinkAndDamage : MonoBehaviourPunCallbacks
             if (!inZone)
             {
                 fullScreenEffectMat.SetFloat("_VignetteIntensity", 0f);
+                //takeTickDamageDelegate -= other.GetComponent<Player>().TakeDamage;;
+                Debug.Log("InZone");
             }
         }
     }
@@ -246,7 +249,8 @@ public class BlueZoneShrinkAndDamage : MonoBehaviourPunCallbacks
         if (other.gameObject.CompareTag("Player") && other.gameObject.GetComponent<PhotonView>().IsMine)
         {
             inZone = false;
-            
+            Debug.Log("OutZone");
+            takeTickDamageDelegate = other.GetComponent<Player>().TakeDamage;
             fullScreenEffectMat.SetFloat("_VignetteIntensity", vignetteSetting);
         }
     }
@@ -255,7 +259,15 @@ public class BlueZoneShrinkAndDamage : MonoBehaviourPunCallbacks
     {
         if (!inZone)
         {
-            Debug.Log("You got hot by : " + tickDamages[damageIdx]);
+            if (takeTickDamageDelegate != null)
+            {
+                takeTickDamageDelegate.Invoke(tickDamages[damageIdx]);
+                Debug.Log("Damage applied: " + tickDamages[damageIdx]);
+            }
+            else
+            {
+                Debug.Log("No delegate registered for damage.");
+            }
         }
     }
     #endregion

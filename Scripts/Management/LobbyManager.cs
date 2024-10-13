@@ -83,7 +83,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public void BackToMain()
     {
         PhotonNetwork.LeaveLobby();
+        SoundManager.Instance.StopLoopSound("BGM");
         LoadingSceneManager.instance.ChangeScene("Main");
+        
     }
     #endregion
     
@@ -182,8 +184,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         {
             isCounting = true;
             
-            PhotonNetwork.CurrentRoom.IsOpen = false;
-            PhotonNetwork.CurrentRoom.IsVisible = false;
+            // PhotonNetwork.CurrentRoom.IsOpen = false;
+            // PhotonNetwork.CurrentRoom.IsVisible = false;
 
             count = StartCoroutine(CountDown(3));
         }

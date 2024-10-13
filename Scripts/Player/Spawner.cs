@@ -26,7 +26,9 @@ public class Spawner : MonoBehaviour
         {
             SpawnPlayers();
             WeaponManager.instance.SpawnWeapons(PhotonNetwork.CurrentRoom.Players.Count);
+            ItemManager.instance.SpawnItems(PhotonNetwork.CurrentRoom.Players.Count);
         }
+        SoundManager.Instance.StopLoopSound("BGM");
     }
 
     void SpawnPlayers()

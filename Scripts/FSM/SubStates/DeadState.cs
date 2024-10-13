@@ -23,6 +23,8 @@ public class DeadState : PlayerState
         PhotonNetwork.SetPlayerCustomProperties(PhotonNetwork.LocalPlayer.CustomProperties);
         
         player.GetComponent<PhotonView>().RPC("ActivateRagDoll", RpcTarget.All);
+        
+        InGameManager.gameResultDelegate?.Invoke();
     }
 }
 

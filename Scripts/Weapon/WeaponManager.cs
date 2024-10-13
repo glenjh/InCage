@@ -20,6 +20,8 @@ public class WeaponManager : MonoBehaviour
     public Vector3 center;
     public float range;
 
+    public Transform weaponParent;
+
     private void Awake()
     {
         Init();
@@ -43,7 +45,7 @@ public class WeaponManager : MonoBehaviour
         if(PhotonNetwork.IsMasterClient)
         {
             float totalWeight = 0;
-            foreach (var variable in weaponWeight)
+            foreach (var variable in gradeWeight)
             {
                 totalWeight += variable;
             }
@@ -51,9 +53,9 @@ public class WeaponManager : MonoBehaviour
             for (var i = 0; i < weaponWeight[playerCnt]; i++)
             {
                 var temp = Random.Range(0, totalWeight);
-                for (var j = 0; j < weaponWeight.Length; j++)
+                for (var j = 0; j < gradeWeight.Count; j++)
                 {
-                    temp -= weaponWeight[j];
+                    temp -= gradeWeight[j];
                     if (temp <= 0)
                     {
                         while (true)
@@ -81,6 +83,7 @@ public class WeaponManager : MonoBehaviour
         var rot = Quaternion.Euler(0, 0, 60);
         Weapon weapon = Instantiate(weapons[weaponID], pos, rot);
         weapon.Init(key, (Weapons.Grade)grade);
+        weapon.transform.parent = weaponParent;
         weaponDict.Add(key, weapon);
     }
 }

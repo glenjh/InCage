@@ -40,13 +40,6 @@ public class WeaponController : MonoBehaviour
         weapons[0].AttackEvent += ChangeCurAmmo;
         weapons[1] = null;
         weapons[2] = null;
-        // baseWeapon.gameObject.SetActive(true);
-        // baseWeapon.transform.parent = weaponPos;
-        // baseWeapon.transform.localPosition = Vector3.zero;
-        // //fstWeapon.transform.localRotation = Quaternion.Euler(Vector3.zero);
-        // baseWeapon.Picked();
-        // baseWeapon.Equip(thirdPersonCam, weaponControllerIK, ref curAmmoText, ref maxAmmoText, pv);
-        // baseWeapon.AttackEvent += ChangeCurAmmo;
         
         AttackEvent += player.OnFire;
         ReloadEvent += player.OnReload;
@@ -103,6 +96,7 @@ public class WeaponController : MonoBehaviour
         {
             return;
         }
+        weapons[curWeapon].offAiming();
         weapons[curWeapon].gameObject.SetActive(false);
         curWeapon = type;
         weapons[curWeapon].gameObject.SetActive(true);
@@ -132,6 +126,7 @@ public class WeaponController : MonoBehaviour
             {
                 weapons[2] = weapons[1];
                 //weapons[2].gameObject.SetActive(false);
+                weapons[curWeapon].offAiming();
                 weapons[curWeapon].gameObject.SetActive(false);
                 curWeapon = 1;
             }
@@ -141,12 +136,14 @@ public class WeaponController : MonoBehaviour
                 //바닥에 버림
                 weapons[curWeapon].transform.parent = null;
                 weapons[curWeapon].AttackEvent -= ChangeCurAmmo;
+                weapons[curWeapon].offAiming();
                 weapons[curWeapon].Drop();
             }
         }
         else
         {
             weapons[curWeapon].gameObject.SetActive(false);
+            weapons[curWeapon].offAiming();
             curWeapon = 1;
         }
         
@@ -170,7 +167,6 @@ public class WeaponController : MonoBehaviour
         if (other.CompareTag("Weapon"))
         {
             other.GetComponent<Weapon>().PickedEvent += GetWeapon;
-            Debug.Log(other.name + " Enter");
         }
     }
     
@@ -179,7 +175,6 @@ public class WeaponController : MonoBehaviour
         if (other.CompareTag("Weapon"))
         {
             other.GetComponent<Weapon>().PickedEvent -= GetWeapon;
-            Debug.Log(other.name + " Exit");
         }
     }
     
@@ -197,5 +192,11 @@ public class WeaponController : MonoBehaviour
     public void ChangeCurAmmo(string ammo)
     {
         curAmmoText.text = ammo;
+    }
+
+    [PunRPC]
+    public void AddImpact()
+    {
+        
     }
 }

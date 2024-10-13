@@ -28,7 +28,7 @@ public class PlayerState
 
     public virtual void LogicalUpdate()
     {
-        if (Input.GetKeyDown(KeyCode.T))
+        if (player.curHP <= 0&&stateMachine.currState!=player.deadState)
         {
             stateMachine.ChangeState(player.deadState);
         }

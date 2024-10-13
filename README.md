@@ -25,6 +25,8 @@ Unity 2022.3.9f1, Photon, Git, Blender
 
 ### [Playing Video]
 
+https://drive.google.com/drive/u/1/folders/1vzVBWm6AoAyQYM_gm6JejIuBWsXC7WM4
+
 ---
 
 ### [Technology Used]

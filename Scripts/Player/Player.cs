@@ -101,12 +101,36 @@ public class Player : MonoBehaviour, IDamageable
     [SerializeField] private float _maxShield = 100f;
     private float _curHP;
     private float _curShield;
-    public float curHP { get => _curHP; set { _curHP = value;
-        hpSlider.value = _curHP / _maxHP;
-    } }
-    public float curShield { get => _curShield; set { _curShield = value;
-        shieldText.value = _curShield / _maxShield;
-    } }
+
+    public float curHP
+    {
+        get => _curHP;
+        set
+        {
+            _curHP = value;
+            if (_curHP > _maxHP)
+            {
+                _curHP = _maxHP;
+            }
+
+            hpSlider.value = _curHP / _maxHP;
+        }
+    }
+
+    public float curShield
+    {
+        get => _curShield;
+        set
+        {
+            _curShield = value;
+            if (curShield > _maxShield)
+            {
+                curShield = _maxShield;
+            }
+            shieldText.value = _curShield / _maxShield;
+        }
+    }
+
     public Slider hpSlider;
     public Slider shieldText;
     public Material fullScreenEffectMat;
@@ -165,6 +189,7 @@ public class Player : MonoBehaviour, IDamageable
             CruchMoveState = new CruchMoveState(this, stateMachine, "CRUCH MOVE");
             cagedState = new CagedState(this, stateMachine, "CAGED");
             deadState = new DeadState(this, stateMachine, "DEAD");
+            fullScreenEffectMat.SetFloat("_VignetteIntensity", 0f);
         }
         else
         {
@@ -182,16 +207,16 @@ public class Player : MonoBehaviour, IDamageable
             stateMachine.Init(cagedState);
             jumpTimeoutDelta = jumpTimeOut;
             fallTimeoutDelta = fallTimeOut;
-            
-            
+
+
             // int layer = LayerMask.NameToLayer("NonTarget");
             // ChangeLayerRecursively(gameObject, layer);
-            
-            curHP = _maxHP;
-            curShield = _maxShield;
         }
+
+        curHP = _maxHP;
+        curShield = _maxShield;
     }
-    
+
     void AnimationStringHash()
     {
         animIDX = Animator.StringToHash("dirX");
@@ -338,16 +363,21 @@ public class Player : MonoBehaviour, IDamageable
             ChangeLayerRecursively(child.gameObject, layer);
         }
     }
-    
+
+    public void TakeDamage(float damage)
+    {
+        PV.RPC("TakeDamageRPC",RpcTarget.AllBuffered,damage);
+    }
+
     [PunRPC]
     public void TakeDamageRPC(float damage)
     {
-        if(curShield > 0)
+        if (curShield > 0)
         {
             curShield = curShield - damage < 0 ? 0 : curShield - damage;
             if (PV.IsMine)
             {
-                if(_vignetteEffectCoroutine != null)
+                if (_vignetteEffectCoroutine != null)
                     StopCoroutine(_vignetteEffectCoroutine);
                 fullScreenEffectMat.SetColor("_VignetteColor", new Color(0.5f, 0.8f, 1, 1));
                 fullScreenEffectMat.SetFloat("_VignetteIntensity", 1.5f);
@@ -359,12 +389,31 @@ public class Player : MonoBehaviour, IDamageable
             curHP -= damage;
             if (PV.IsMine)
             {
-                if(_vignetteEffectCoroutine != null)
+                if (_vignetteEffectCoroutine != null)
                     StopCoroutine(_vignetteEffectCoroutine);
                 fullScreenEffectMat.SetColor("_VignetteColor", new Color(1, 0, 0, 1));
                 fullScreenEffectMat.SetFloat("_VignetteIntensity", 1.5f);
                 _vignetteEffectCoroutine = StartCoroutine(VignetteEffect());
             }
+
+        }
+    }
+
+    public void UseItem(int value, bool isShield)
+    {
+        PV.RPC("UseItemRPC", RpcTarget.AllBuffered, value, isShield);
+    }
+
+    [PunRPC]
+    public void UseItemRPC(int value, bool isShield)
+    {
+        if (isShield)
+        {
+            curShield += value;
+        }
+        else
+        {
+            curHP += value;
         }
     }
     
@@ -394,5 +443,12 @@ public class Player : MonoBehaviour, IDamageable
             rb.useGravity = true;
             rb.isKinematic = false;
         }
+    }
+
+    private void OnDisable()
+    {
+        if (_vignetteEffectCoroutine != null)
+            StopCoroutine(_vignetteEffectCoroutine);
+        fullScreenEffectMat.SetFloat("_VignetteIntensity", 0f);
     }
 }
